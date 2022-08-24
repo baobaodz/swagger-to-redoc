@@ -1,5 +1,12 @@
 
+/** swagger 地址 */
 var swaggerUrl;
+/** 上传的可key/文件名 */
+var key;
+/** AccessKey */
+var accessKey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+/** SecretKey */
+var secretKey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
 
 
 $('#start').on("click", function () {
@@ -10,19 +17,24 @@ $('#start').on("click", function () {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         console.log('🚀 -> tabs XX', tabs[0].url);
         alert(tabs[0].url)
-        var regx = /^http(s)?:\/\/(.*?)\//
-        var rs = regx.exec(tabs[0].url)
+        let regx = /^http(s)?:\/\/(.*?)\//;
+        let rs = regx.exec(tabs[0].url);
         if (rs.length) {
             swaggerUrl = rs[0] + 'v2/api-docs';
         }
-        alert(swaggerUrl)
+        alert(swaggerUrl);
         // return;
-        getdDoc(swaggerUrl);
+        getdApiDocs(swaggerUrl);
     });
 
 
 });
-function saveAs(data, fileName) { // data: 要保存的数据; name: 文件名称
+/**
+ * 保存文件
+ * @param {string} data 要保存的数据
+ * @param {string} fileName 文件名称
+ */
+function saveAs(data, fileName) {
 
     // 创建一个a标签
     const aLink = document.createElement("a");
@@ -35,56 +47,57 @@ function saveAs(data, fileName) { // data: 要保存的数据; name: 文件名�
     // Dom文档Body里生成一个a标签
     document.body.appendChild(aLink);
     // 模拟点击a标签
-    aLink.click()
+    aLink.click();
     // 移去a标签
     document.body.removeChild(aLink);
 }
+/**
+ * 上传文件到七牛云
+ * @param {Blob} file 文件数据
+ */
+function uploadFile(file) {
 
-// L7bRFs7dxn2-QT_FS86p7QQMpHWlJNndz9qHHm-G:_1oK1ei33Qq3ZlsO0JzKc2toLoQ=:eyJzY29wZSI6ImJhb2Jhb2R6OiIsImRlYWRsaW5lIjoxMDE2NTk2Nzg3MDN9
-function uploadFile(file, filename) {
 
-    const token = "L7bRFs7dxn2-QT_FS86p7QQMpHWlJNndz9qHHm-G:_1oK1ei33Qq3ZlsO0JzKc2toLoQ=:eyJzY29wZSI6ImJhb2Jhb2R6OiIsImRlYWRsaW5lIjoxMDE2NTk2Nzg3MDN9";
-
-    // z1华北 z2 华南
-    let config = {
+    const token = generateToken();
+    console.log('🚀 -> uploadFile -> token', token);
+    console.log('🚀 -> uploadFile -> key', key);
+    // z0华东 z1华北 z2 华南
+    const config = {
         useCdnDomain: true,
         region: qiniu.region.z0
     };
-    let putExtra = {
+    const putExtra = {
         fname: "",
         params: {},
         mimeType: null
     };
 
-    console.log(1111111111)
-    let subscription;
     // 调用sdk上传接口获得相应的observable，控制上传和暂停
-    let observable = qiniu.upload(file, '', token, putExtra, config);
+    let observable = qiniu.upload(file, key, token, putExtra, config);
     let observer = {
-        next(result) {                        //上传中(result参数带有total字段的 object，包含loaded、total、percent三个属性)
+        next(result) { // 上传中(result参数带有total字段的 object，包含loaded、total、percent三个属性)
             let total = result.total;
-            console.log('total: ', total)
-            $(".speed").text("进度：" + total.percent + "% ");//查看进度[loaded:已上传大小(字节);total:本次上传总大小;percent:当前上传进度(0-100)]
+            console.log('🚀 -> upload next -> total', total);
+            $(".speed").text("进度：" + total.percent + "% "); // 查看进度[loaded:已上传大小(字节);total:本次上传总大小;percent:当前上传进度(0-100)]
             if (total.percent === 100) {
-                window.open('https://document.baobaodz.top/plugin/redoc.html', 'newwindow', '')
+                window.open('https://document.baobaodz.top/plugin/redoc.html', 'newwindow', '');
             }
         },
         error(err) {
-            console.log(err)                       //失败后
+            console.log('🚀 -> upload error -> err', err);
             alert(err.message);
         },
         complete(res) {
-            console.log(res)                   //成功后
-            // ?imageView2/2/h/100：展示缩略图，不加显示原图
-            // ?vframe/jpg/offset/0/w/480/h/360：用于获取视频截图的后缀，0：秒，w：宽，h：高
+            console.log('🚀 -> upload complete -> res', res);
         }
     }
-    // 取消上传
-    // subscription.unsubscribe();
-    observable.subscribe(observer)
+    observable.subscribe(observer);
 }
-
-function getdDoc(url) {
+/**
+ * 获取swagger json数据
+ * @param {string} url swagger doc地址
+ */
+function getdApiDocs(url) {
     alert('getdDoc -> swaggerUrl: ' + url);
     $.ajax({
         url: url,
@@ -92,10 +105,55 @@ function getdDoc(url) {
         contentType: "application/json",
         success: function (res, _res) {
             alert('getdDoc -> res: ' + res);
-            console.log('res: ', res)
+            console.log('🚀 -> getdDoc -> res', res);
             saveAs(JSON.stringify(res), "save.json");
             const blob = new Blob([JSON.stringify(res)], { type: "text/plain;charset=utf-8" });
-            uploadFile(blob, "save.json")
+            uploadFile(blob);
         }
     })
 }
+/**
+ * 生成上传七牛云的token
+ * @returns 上传token
+ */
+function generateToken() {
+
+    const timestamp = Math.round(new Date().getTime() / 1000);
+    key = formatDate(new Date(), "yyyy-MM-dd") + "/" + timestamp + ".json";
+    let putPolicy = {};
+    putPolicy.scope = "baobaodz" + ":" + key;
+    putPolicy.deadline = timestamp + 36000;//必须是数值类型非字符串
+    // 将上传策略序列化成为JSON
+    let put_policy = JSON.stringify(putPolicy);
+    // 对 JSON 编码的上传策略进行URL 安全的 Base64 编码，得到待签名字符串
+    let encoded = tokentool.base64encode(tokentool.utf16to8(put_policy));
+    // 使用访问密钥（AK/SK）对上一步生成的待签名字符串计算HMAC-SHA1签名
+    let hash = CryptoJS.HmacSHA1(encoded, secretKey);
+    // 对签名进行URL安全的Base64编码
+    let encodedSigned = hash.toString(CryptoJS.enc.Base64);
+    // 将访问密钥（AK/SK）、encodedSign 和 encodedPutPolicy 用英文符号:连接起来
+    let uploadToken = accessKey + ":" + tokentool.safe64(encodedSigned) + ":" + encoded;
+    return uploadToken;
+}
+
+function formatDate(date, fmt) {
+    date = new Date(date);
+    let o = {
+        'M+': date.getMonth() + 1,               // 月份
+        'd+': date.getDate(),                    // 日
+        'h+': date.getHours(),                   // 小时
+        'm+': date.getMinutes(),                 // 分
+        's+': date.getSeconds(),                 // 秒
+        'q+': Math.floor((date.getMonth() + 3) / 3), // 季度
+        'S': date.getMilliseconds()             // 毫秒
+    };
+    if (/(y+)/.test(fmt)) {
+        fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
+    }
+    for (let k in o) {
+        if (new RegExp('(' + k + ')').test(fmt)) {
+            fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (('00' + o[k]).substr(('' + o[k]).length)));
+        }
+    }
+    return fmt;
+};
