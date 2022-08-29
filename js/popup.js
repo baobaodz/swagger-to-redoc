@@ -2,12 +2,15 @@
 /** swagger 地址 */
 var swaggerUrl;
 /** 上传的可key/文件名 */
-var key;
+var key = '';
 /** AccessKey */
-var accessKey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+const accessKey = "xxxxxxxxxxxx";
 /** SecretKey */
-var secretKey = "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx";
+const secretKey = "xxxxxxxxxxxx";
 
+const baseUrl = "https://document.baobaodz.top/";
+
+var randomFileName;
 
 $('#start').on("click", function () {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -22,7 +25,6 @@ $('#start').on("click", function () {
         if (rs.length) {
             swaggerUrl = rs[0] + 'v2/api-docs';
         }
-        alert(swaggerUrl);
         // return;
         getdApiDocs(swaggerUrl);
     });
@@ -57,8 +59,10 @@ function saveAs(data, fileName) {
  */
 function uploadFile(file) {
 
+    randomFileName = Math.round(new Date().getTime() / 1000);
+    const key = "plugin/" + formatDate(new Date(), "yyyy-MM-dd") + "/" + randomFileName + ".json";
 
-    const token = generateToken();
+    const token = generateToken(key);
     console.log('🚀 -> uploadFile -> token', token);
     console.log('🚀 -> uploadFile -> key', key);
     // z0华东 z1华北 z2 华南
@@ -80,7 +84,17 @@ function uploadFile(file) {
             console.log('🚀 -> upload next -> total', total);
             $(".speed").text("进度：" + total.percent + "% "); // 查看进度[loaded:已上传大小(字节);total:本次上传总大小;percent:当前上传进度(0-100)]
             if (total.percent === 100) {
-                window.open('https://document.baobaodz.top/plugin/redoc.html', 'newwindow', '');
+                chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                    console.log('🚀 -> [popup] tabs vvvvvv', tabs[0].url);
+                    const message = {
+                        id: randomFileName,
+                        specUrl: baseUrl + key
+                    }
+                    chrome.tabs.sendMessage(tabs[0].id, message, (response) => {
+                        console.log('🚀 -> [popup] chrome.tabs.sendMessage -> response 222', response);
+                        // window.open(`https://document.baobaodz.top/plugin/redoc.html?q=${randomFileName}`, 'newwindow', '');
+                    });
+                })
             }
         },
         error(err) {
@@ -104,7 +118,6 @@ function getdApiDocs(url) {
         type: 'GET',
         contentType: "application/json",
         success: function (res, _res) {
-            alert('getdDoc -> res: ' + res);
             console.log('🚀 -> getdDoc -> res', res);
             saveAs(JSON.stringify(res), "save.json");
             const blob = new Blob([JSON.stringify(res)], { type: "text/plain;charset=utf-8" });
@@ -114,15 +127,14 @@ function getdApiDocs(url) {
 }
 /**
  * 生成上传七牛云的token
+ * @param {string} key 全路径文件
  * @returns 上传token
  */
-function generateToken() {
+function generateToken(key) {
 
-    const timestamp = Math.round(new Date().getTime() / 1000);
-    key = formatDate(new Date(), "yyyy-MM-dd") + "/" + timestamp + ".json";
     let putPolicy = {};
     putPolicy.scope = "baobaodz" + ":" + key;
-    putPolicy.deadline = timestamp + 36000;//必须是数值类型非字符串
+    putPolicy.deadline = randomFileName + 36000;//必须是数值类型非字符串
     // 将上传策略序列化成为JSON
     let put_policy = JSON.stringify(putPolicy);
     // 对 JSON 编码的上传策略进行URL 安全的 Base64 编码，得到待签名字符串
@@ -132,8 +144,8 @@ function generateToken() {
     // 对签名进行URL安全的Base64编码
     let encodedSigned = hash.toString(CryptoJS.enc.Base64);
     // 将访问密钥（AK/SK）、encodedSign 和 encodedPutPolicy 用英文符号:连接起来
-    let uploadToken = accessKey + ":" + tokentool.safe64(encodedSigned) + ":" + encoded;
-    return uploadToken;
+    let token = accessKey + ":" + tokentool.safe64(encodedSigned) + ":" + encoded;
+    return token;
 }
 
 function formatDate(date, fmt) {

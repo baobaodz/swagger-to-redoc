@@ -10,6 +10,13 @@ chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         console.log('🚀 -> [service-worker] chrome.tabs.sendMessage -> response 222', response);
     });
 });
+chrome.tabs.query({ active: true}, function (tabs) {
+    console.log('🚀 -> [service-worker] active tabs vvvvvv', tabs[0]);
+    chrome.scripting.executeScript({
+        target: { tabId: tabs[0].id },
+        files: ['js/content-script.js']
+      });
+});
 // 添加图标点击事件监听
 chrome.action.onClicked.addListener(() => {
     console.log('1、点击了插件图标');
