@@ -4,13 +4,19 @@ var swaggerUrl;
 /** 上传的可key/文件名 */
 var key = '';
 /** AccessKey */
-const accessKey = "xxxxxxxxxxxx";
+const accessKey = "xxxxxxxxxxxxxxxxxxxxx";
 /** SecretKey */
-const secretKey = "xxxxxxxxxxxx";
+const secretKey = "xxxxxxxxxxxxxxxxxxxxx";
 
 const baseUrl = "https://document.baobaodz.top/";
 
-var randomFileName;
+const pluginDir = "plugin/";
+
+/** 日期作为目录，方便后期维护 */
+const today = formatDate(new Date(), "yyyyMMdd");
+
+/** 上传的时间戳，也作为文件名使用 */
+var timeStemp;
 
 $('#start').on("click", function () {
     chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
@@ -59,8 +65,8 @@ function saveAs(data, fileName) {
  */
 function uploadFile(file) {
 
-    randomFileName = Math.round(new Date().getTime() / 1000);
-    const key = "plugin/" + formatDate(new Date(), "yyyy-MM-dd") + "/" + randomFileName + ".json";
+    timeStemp = Math.round(new Date().getTime() / 1000);
+    const key = pluginDir + today + "/" + timeStemp + ".json";
 
     const token = generateToken(key);
     console.log('🚀 -> uploadFile -> token', token);
@@ -87,12 +93,13 @@ function uploadFile(file) {
                 chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                     console.log('🚀 -> [popup] tabs vvvvvv', tabs[0].url);
                     const message = {
-                        id: randomFileName,
+                        id: timeStemp,
+                        date: today,
                         specUrl: baseUrl + key
                     }
                     chrome.tabs.sendMessage(tabs[0].id, message, (response) => {
                         console.log('🚀 -> [popup] chrome.tabs.sendMessage -> response 222', response);
-                        // window.open(`https://document.baobaodz.top/plugin/redoc.html?q=${randomFileName}`, 'newwindow', '');
+                        // window.open(`https://document.baobaodz.top/plugin/redoc.html?q=${timeStemp}`, 'newwindow', '');
                     });
                 })
             }
@@ -134,7 +141,7 @@ function generateToken(key) {
 
     let putPolicy = {};
     putPolicy.scope = "baobaodz" + ":" + key;
-    putPolicy.deadline = randomFileName + 36000;//必须是数值类型非字符串
+    putPolicy.deadline = timeStemp + 36000;//必须是数值类型非字符串
     // 将上传策略序列化成为JSON
     let put_policy = JSON.stringify(putPolicy);
     // 对 JSON 编码的上传策略进行URL 安全的 Base64 编码，得到待签名字符串

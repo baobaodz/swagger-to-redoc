@@ -7,7 +7,7 @@ chrome.runtime.onMessage.addListener((message, callback) => {
     console.log('🚀 -> [content-script] chrome.runtime.onMessage.addListener -> message', message);
     if(message){
         localStorage.setItem(message.id, JSON.stringify(message.specUrl))
-        window.open(`https://document.baobaodz.top/plugin/redoc.html?q=${message.id}`, 'newwindow', '');
+        window.open(`https://document.baobaodz.top/plugin/redoc.html?d=${message.date}&q=${message.id}`, 'newwindow', '');
     }
 });
 // 发送信息

@@ -22,7 +22,6 @@
 
   </head>
   <body>
-
     <!--
     Redoc element with link to your OpenAPI definition
     -->
@@ -30,34 +29,26 @@
     <script>
       console.log('hahahhahhaha')
       function goTo404(){
-        // window.location.href = "https://document.baobaodz.top/404.html";
-        console.log('🚀 -> goTo404 -> window.location.href', window.location.href);
+        window.location.href = "https://document.baobaodz.top/404.html";
       }
-      setTimeout(()=>{
-        if(location.search){
-          var storageId = location.search.substring(location.search.lastIndexOf('?q=') + 3);
-          var redocEles = document.getElementsByTagName("redoc");
-          if(storageId && redocEles.length){
-            var redocEle = redocEles[0];
+      var params = location.search;
+        if(params){
+          var date = params.substring(params.lastIndexOf('?d=') + 3,params.lastIndexOf('&') );
+          var fileName = params.substring(params.lastIndexOf('&q=') + 3);
+          if(date && fileName){
+            var redocEle = document.getElementsByTagName('redoc')[0];
+            redocEle.setAttribute("spec-url", `https://document.baobaodz.top/plugin/${date}/${fileName}.json`);
             console.log('🚀 -> redocEle', redocEle);
-            const speclUrl = localStorage.getItem(storageId);
-            if(speclUrl){
-              redocEle.setAttribute("spec-url", localStorage.getItem(storageId));
-            } else {
-              goTo404();
-            }
           } else {
             goTo404();
           }
         } else {
           goTo404();
         }
-      }, 0);
     </script>
     <!--
     Link to Redoc JavaScript on CDN for rendering standalone element
     -->
-
     <script src="https://cdn.redoc.ly/redoc/latest/bundles/redoc.standalone.js"></script>
   </body>
 </html>
