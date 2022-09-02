@@ -4,9 +4,9 @@ var swaggerUrl;
 /** 上传的可key/文件名 */
 var key = '';
 /** AccessKey */
-const accessKey = "xxxxxxxxxxxxxxxxxxxxx";
+const accessKey = "xxxxxxxx";
 /** SecretKey */
-const secretKey = "xxxxxxxxxxxxxxxxxxxxx";
+const secretKey = "xxxxxxxx";
 
 const baseUrl = "https://document.baobaodz.top/";
 
@@ -26,7 +26,7 @@ $('#start').on("click", function () {
     chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
         console.log('🚀 -> tabs XX', tabs[0].url);
         alert(tabs[0].url)
-        let regx = /^http(s)?:\/\/(.*?)\//;
+        let regx = /^(.+(?=swagger))/;
         let rs = regx.exec(tabs[0].url);
         if (rs.length) {
             swaggerUrl = rs[0] + 'v2/api-docs';
@@ -59,7 +59,7 @@ function saveAs(data, fileName) {
     // 移去a标签
     document.body.removeChild(aLink);
 }
-/**
+/** 
  * 上传文件到七牛云
  * @param {Blob} file 文件数据
  */
