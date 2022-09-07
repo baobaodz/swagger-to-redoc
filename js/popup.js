@@ -1,16 +1,24 @@
 
 /** swagger 地址 */
 var swaggerUrl;
+
 /** 上传的可key/文件名 */
 var key = '';
-/** AccessKey */
-const accessKey = "xxxxxxxx";
-/** SecretKey */
-const secretKey = "xxxxxxxx";
 
-const baseUrl = "https://document.baobaodz.top/";
+/** 七牛云AccessKey */
+const accessKey = "xxxxxxxxxxx";
 
-const pluginDir = "plugin/";
+/** 七牛云SecretKey */
+const secretKey = "xxxxxxxxxxx";
+
+/** 七牛云外链域名 */
+const baseUrl = "https://document.baobaodz.top";
+
+/** 七牛云存储目录名 */
+const pluginDir = "plugin";
+
+/** 七牛云存储空间名 */
+const bucket = "baobaodz";
 
 /** 日期作为目录，方便后期维护 */
 const today = formatDate(new Date(), "yyyyMMdd");
@@ -28,8 +36,9 @@ $('#start').on("click", function () {
         alert(tabs[0].url)
         let regx = /^(.+(?=swagger))/;
         let rs = regx.exec(tabs[0].url);
+        console.log('🚀 -> rs', rs);
         if (rs.length) {
-            swaggerUrl = rs[0] + 'v2/api-docs';
+            swaggerUrl = `${rs[0]}v2/api-docs`;
         }
         // return;
         getdApiDocs(swaggerUrl);
@@ -66,12 +75,12 @@ function saveAs(data, fileName) {
 function uploadFile(file) {
 
     timeStemp = Math.round(new Date().getTime() / 1000);
-    const key = pluginDir + today + "/" + timeStemp + ".json";
+    const key = `${pluginDir}/${today}/${timeStemp}.json`; 
 
     const token = generateToken(key);
     console.log('🚀 -> uploadFile -> token', token);
     console.log('🚀 -> uploadFile -> key', key);
-    // z0华东 z1华北 z2 华南
+    // z0华东 z1华北 z2华南
     const config = {
         useCdnDomain: true,
         region: qiniu.region.z0
@@ -89,20 +98,6 @@ function uploadFile(file) {
             let total = result.total;
             console.log('🚀 -> upload next -> total', total);
             $(".speed").text("进度：" + total.percent + "% "); // 查看进度[loaded:已上传大小(字节);total:本次上传总大小;percent:当前上传进度(0-100)]
-            if (total.percent === 100) {
-                chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
-                    console.log('🚀 -> [popup] tabs vvvvvv', tabs[0].url);
-                    const message = {
-                        id: timeStemp,
-                        date: today,
-                        specUrl: baseUrl + key
-                    }
-                    chrome.tabs.sendMessage(tabs[0].id, message, (response) => {
-                        console.log('🚀 -> [popup] chrome.tabs.sendMessage -> response 222', response);
-                        // window.open(`https://document.baobaodz.top/plugin/redoc.html?q=${timeStemp}`, 'newwindow', '');
-                    });
-                })
-            }
         },
         error(err) {
             console.log('🚀 -> upload error -> err', err);
@@ -110,6 +105,19 @@ function uploadFile(file) {
         },
         complete(res) {
             console.log('🚀 -> upload complete -> res', res);
+            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
+                console.log('🚀 -> [popup] tabs vvvvvv', tabs[0].url);
+                const message = {
+                    id: timeStemp,
+                    date: today,
+                    specUrl: `${baseUrl}/${res.key}`,
+                    dirUrl: `${baseUrl}/${pluginDir}`
+                }
+                chrome.tabs.sendMessage(tabs[0].id, message, (response) => {
+                    console.log('🚀 -> [popup] chrome.tabs.sendMessage -> response 222', response);
+                    // window.open(`https://document.baobaodz.top/plugin/redoc.html?q=${timeStemp}`, 'newwindow', '');
+                });
+            })
         }
     }
     observable.subscribe(observer);
@@ -126,7 +134,7 @@ function getdApiDocs(url) {
         contentType: "application/json",
         success: function (res, _res) {
             console.log('🚀 -> getdDoc -> res', res);
-            saveAs(JSON.stringify(res), "save.json");
+            // saveAs(JSON.stringify(res), "save.json");
             const blob = new Blob([JSON.stringify(res)], { type: "text/plain;charset=utf-8" });
             uploadFile(blob);
         }
@@ -140,7 +148,7 @@ function getdApiDocs(url) {
 function generateToken(key) {
 
     let putPolicy = {};
-    putPolicy.scope = "baobaodz" + ":" + key;
+    putPolicy.scope = `${bucket}:${key}`;
     putPolicy.deadline = timeStemp + 36000;//必须是数值类型非字符串
     // 将上传策略序列化成为JSON
     let put_policy = JSON.stringify(putPolicy);
@@ -151,28 +159,6 @@ function generateToken(key) {
     // 对签名进行URL安全的Base64编码
     let encodedSigned = hash.toString(CryptoJS.enc.Base64);
     // 将访问密钥（AK/SK）、encodedSign 和 encodedPutPolicy 用英文符号:连接起来
-    let token = accessKey + ":" + tokentool.safe64(encodedSigned) + ":" + encoded;
+    let token = `${accessKey}:${tokentool.safe64(encodedSigned)}:${encoded}`;
     return token;
 }
-
-function formatDate(date, fmt) {
-    date = new Date(date);
-    let o = {
-        'M+': date.getMonth() + 1,               // 月份
-        'd+': date.getDate(),                    // 日
-        'h+': date.getHours(),                   // 小时
-        'm+': date.getMinutes(),                 // 分
-        's+': date.getSeconds(),                 // 秒
-        'q+': Math.floor((date.getMonth() + 3) / 3), // 季度
-        'S': date.getMilliseconds()             // 毫秒
-    };
-    if (/(y+)/.test(fmt)) {
-        fmt = fmt.replace(RegExp.$1, (date.getFullYear() + '').substr(4 - RegExp.$1.length));
-    }
-    for (let k in o) {
-        if (new RegExp('(' + k + ')').test(fmt)) {
-            fmt = fmt.replace(RegExp.$1, (RegExp.$1.length == 1) ? (o[k]) : (('00' + o[k]).substr(('' + o[k]).length)));
-        }
-    }
-    return fmt;
-};
