@@ -2,9 +2,8 @@
     padding: 0;
     margin: 0;
 }
-.my-container {
-    width: 200px;
-    height: 300px;
+.container {
+    width: max-content;
     background-color: aliceblue;
 }
 #start {
@@ -12,4 +11,10 @@
     width: 140px;
     height: 32px;
     line-height: 32px;
+}
+.message {
+    height: 20px;
+    font-size: 12px;
+    line-height: 20px;
+    color: red;
 }
