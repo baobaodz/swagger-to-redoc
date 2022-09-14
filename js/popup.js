@@ -6,10 +6,10 @@ var swaggerUrl;
 var key = '';
 
 /** 七牛云AccessKey */
-const accessKey = "xxxxxxxxxxxxxxxxxxxxxxxxx";
+const accessKey = "xxxxxxxxxxxxxxxxx";
 
 /** 七牛云SecretKey */
-const secretKey = "xxxxxxxxxxxxxxxxxxxxxxxxx";
+const secretKey = "xxxxxxxxxxxxxxxxx";
 
 /** 七牛云存储空间名 */
 const bucket = "baobaodz";
@@ -34,59 +34,96 @@ var qiniuInfo = {
     baseUrl: '',
     pluginDir: 'plugin',
 }
+const rememberElement = $('input[name="remember"]');
 
+initFormValue();
 listenForm();
-$(`input[name="pluginDir"]`).val(pluginDir);
+listenCheckbox();
+
 $('#start').on("click", function () {
 
-    const rem = $(`input[name="remember"]`).value
-    console.log('🚀 -> rem', rem);
     if (validateForm()) {
         setQiniuInfo();
-
-        return;
-        // chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-        //     console.log('request: ', request);
-        //     swaggerUrl = request.url;
-        // });
-        // chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
-        //     console.log('🚀 -> tabs XX', tabs[0].url);
-        //     alert(tabs[0].url)
-        //     let regx = /^(.+(?=swagger))/;
-        //     let rs = regx.exec(tabs[0].url);
-        //     console.log('🚀 -> rs', rs);
-        //     if (rs.length) {
-        //         swaggerUrl = `${rs[0]}v2/api-docs`;
-        //     }
-        //     // return;
-        //     getdApiDocs(swaggerUrl);
-        // });
+        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
+            console.log('request: ', request);
+            swaggerUrl = request.url;
+        });
+        chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
+            console.log('🚀 -> tabs XX', tabs[0].url);
+            alert(tabs[0].url)
+            let regx = /^(.+(?=swagger))/;
+            let rs = regx.exec(tabs[0].url);
+            console.log('🚀 -> rs', rs);
+            if (rs.length) {
+                swaggerUrl = `${rs[0]}v2/api-docs`;
+            }
+            // return;
+            getdApiDocs(swaggerUrl);
+        });
     }
 
 });
+/**
+ * 初始化表单值
+ */
+function initFormValue() {
 
+    //获取存储
+    chrome.storage.local.get(['formValue'], (result) => {
+        console.log('🚀 -> chrome.storage.local.get -> result', result);
+        if (result.formValue) {
+            const formControls = $('.form-control');
+            for (let element of formControls) {
+                const name = element.name;
+                if (result.formValue[name]) {
+                    $(`input[name=${name}]`).val(result.formValue[name]);
+                    validate(element, name);
+                }
+            }
+            rememberElement.prop('checked', true);
+        } else {
+            $(`input[name="pluginDir"]`).val(pluginDir);
+        }
+    })
+}
+/**
+ * 校验表单
+ */
 function validateForm() {
 
     const formControls = $('.form-control');
-    console.log('🚀 -> validateForm -> formControls', formControls);
     for (let element of formControls) {
-        console.log(element);
-        const name = element.name;
-        console.log('🚀 -> validateForm -> element', element);
-        console.log('🚀 -> validateForm -> element.value', element.value);
-        validate(element, name);
+        validate(element, element.name);
     }
-    console.log('🚀 -> validateForm -> length', $('.message error').length);
     return $('.message.error').length === 0;
 }
+/**
+ * 监听表单
+ */
 function listenForm() {
     const formControls = $('.form-control');
     for (let element of formControls) {
         const name = element.name;
         $(`input[name=${name}]`).bind('input propertychange change', function () {
             validate(element, name);
+            setQiniuInfo();
         })
     }
+}
+/**
+ * 监听复选框
+ */
+function listenCheckbox() {
+    rememberElement.on('change', function (event) {
+        if ($(this).prop('checked')) {
+            // 执行存储
+            chrome.storage.local.set({ 'formValue': qiniuInfo });
+        } else {
+            // 删除存储
+            chrome.storage.local.remove('formValue');
+        }
+
+    });
 }
 function validate(element, name) {
     const msg = $(`input[name=${name}]`).next();
@@ -114,16 +151,22 @@ function validate(element, name) {
         // !element.value.trim() ? msg.text(element.placeholder) : msg.text('');
     }
 }
-function setQiniuInfo(){
+/**
+ * 设置七牛云信息
+ */
+function setQiniuInfo() {
     var d = {};
     var t = $('form').serializeArray();
-    console.log('🚀 -> setQiniuInfo -> t', t);
-    console.log($("form").serialize());
-    $.each(t, function() {
-      d[this.name] = this.value;
+    $.each(t, function () {
+        d[this.name] = this.value;
     });
     qiniuInfo = d;
     console.log('🚀 -> setQiniuInfo -> qiniuInfo', qiniuInfo);
+    if (rememberElement.is(':checked')) {
+        // 执行存储
+        chrome.storage.local.set({ 'formValue': qiniuInfo });
+    }
+
 }
 /**
  * 保存文件
