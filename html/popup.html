@@ -1,109 +1,143 @@
-
 <!DOCTYPE html>
 <html lang="zh-cmn-Hans">
-    <head>
-        <meta charset="utf-8" />
-        <title>test</title>
 
-        <meta name="viewport" content="width=device-width, initial-scale=1" />
-        <!-- <link rel="icon" type="image/x-icon" href="favicon.ico" /> -->
+<head>
+    <meta charset="utf-8" />
+    <title>test</title>
 
-        <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css" />
-        <link rel="stylesheet" type="text/css" href="/css/popup.css" />
-    </head>
-    <body>
-        <div class="container">
-            <div class="speed"></div>
-            <div class="row">
-                <div class="col-md-8 col-md-offset-2">
-                    <div class="page-header">
-                        <h2>Bootstrap Form</h2>
-                    </div>
- 
-                    <form id="defaultForm" class="form-horizontal" role="form">
-                        <div class="form-group">
-                            <label class="col-md-3 control-label">accessKey</label>
-                            <div class="col-md-4">
-                                <input type="text" class="form-control" name="accessKey" placeholder="请输入accessKey" />
-                                <div class="message"></div>
-                            </div>
-                        </div>
- 
-                        <div class="form-group">
-                            <label class="col-md-3 control-label">secretKey</label>
-                            <div class="col-md-5">
-                                <input type="text" class="form-control" name="secretKey" placeholder="请输入secretKey"/>
-                                <div class="message"></div>
-                            </div>
-                        </div>
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <!-- <link rel="icon" type="image/x-icon" href="favicon.ico" /> -->
 
-                        <div class="form-group">
-                            <label class="col-md-3 control-label">bucket</label>
-                            <div class="col-md-5">
-                                <input type="text" class="form-control" name="bucket" placeholder="请输入存储空间名"/>
-                                <div class="message"></div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="col-md-3 control-label">baseUrl</label>
-                            <div class="col-md-5">
-                                <input type="text" class="form-control" name="baseUrl" placeholder="请输入外链域名"/>
-                                <div class="message"></div>
-                            </div>
-                        </div>
-
-                        <div class="form-group">
-                            <label class="col-md-3 control-label">pluginDir</label>
-                            <div class="col-md-5">
-                                <input type="text" class="form-control" name="pluginDir" placeholder="请输入存储目录名"/>
-                                <div class="message"></div>
-                            </div>
-                        </div>
- 
-                        <div class="form-group">
-                            <label class="col-md-3 control-label" >birthday</label>
-                            <div class="col-md-5">
-                                <div class="input-group date" id="birthday">
-                                    <input type="text" class="form-control" name="birthday" readonly/>
-                                    <span class="input-group-addon"><span class="glyphicon glyphicon-remove"></span></span>
-                                    <span class="input-group-addon"><span class="glyphicon glyphicon-th"></span></span>                                
-                                </div>
-                            </div>
-                            <!-- 修改默认位置时候可用
-                            <div class="col-md-3 col-md-offset-3"><span id="msg"></span></div>
-                             -->
-                        </div>
-                        
-                        <div class="form-group">
-                            <div class="col-md-6 col-md-offset-3">
-                                <div class="checkbox">
-                                    <label>
-                                        <input type="checkbox" name="remember" value="remember" />记住
-                                    </label>
-                                </div>
-                            </div>
-                        </div>
- 
-                        <!-- <div class="form-group">
-                            <div class="col-md-9 col-md-offset-3">
-                                <button id="start" class="btn btn-primary" >Submit</button>
-                            </div>
-                        </div> -->
-                    </form>
-                    <button id="start" class="btn btn-primary" >Submit</button>
-                </div>
-            </div>
-        </div>
-    </body>
+    <link rel="stylesheet" type="text/css" href="/css/bootstrap.min.css" />
+    <link rel="stylesheet" type="text/css" href="/css/popup.css" />
     <script src="/js/jquery-3.5.1.min.js"></script>
     <script src="/js/bootstrap.min.js"></script>
-    <script src="/js/token.js"></script>
-    <script src="/js/core-min.js"></script>
-    <script src="/js/hmac.js"></script>
-    <script src="/js/sha1.js"></script>
-    <script src="/js/enc-base64.js"></script>
-    <script src="/js/qiniu.min.js"></script>
-    <script src="/js/util.js"></script>
-    <script src="/js/popup.js"></script>
-</html> 
+</head>
+
+<body>
+    <div class="container">
+        <div class="speed"></div>
+        <div class="row">
+            <div class="col-md-8 col-md-offset-2">
+                <div class="header">
+                    <h2>swagger to redoc</h2>
+                </div>
+
+                <form id="defaultForm" class="form-horizontal" role="form">
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">
+                            <span class="required">*</span>
+                            accessKey
+                            <a href="#" class="label-tooltip" data-toggle="tooltip" data-placement="top" title="七牛云AccessKey">
+                                <span class="glyphicon glyphicon-info-sign"></span>
+                            </a>：
+                        </label>
+                        <div class="col-md-4 field">
+                            <input type="password" class="form-control" name="accessKey" placeholder="请输入accessKey" />
+                            <div class="message"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">
+                            <span class="required">*</span>
+                            secretKey                           
+                            <a href="#" class="label-tooltip" data-toggle="tooltip" data-placement="top" title="七牛云SecretKey">
+                                <span class="glyphicon glyphicon-info-sign"></span>
+                            </a>：
+                        </label>
+                        <div class="col-md-5 field">
+                            <input type="password" class="form-control" name="secretKey" placeholder="请输入secretKey" />
+                            <div class="message"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">
+                            <span class="required">*</span>
+                            存储空间名                           
+                            <a href="#" class="label-tooltip" data-toggle="tooltip" data-placement="top" title="七牛云存储空间名">
+                                <span class="glyphicon glyphicon-info-sign"></span>
+                            </a>：
+                        </label>
+                        <div class="col-md-5">
+                            <input type="text" class="form-control" name="bucket" placeholder="请输入存储空间名" />
+                            <div class="message"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">
+                            <span class="required">*</span>
+                            外链域名                           
+                            <a href="#" class="label-tooltip" data-toggle="tooltip" data-placement="top" title="七牛云外链域名">
+                                <span class="glyphicon glyphicon-info-sign"></span>
+                            </a>：
+                        </label>
+                        <div class="col-md-5">
+                            <input type="text" class="form-control" name="baseUrl" placeholder="请输入外链域名" />
+                            <div class="message"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">
+                            存储目录名                           
+                            <a href="#" class="label-tooltip" data-toggle="tooltip" data-placement="top" title="七牛云存储目录名,默认为plugin">
+                                <span class="glyphicon glyphicon-info-sign"></span>
+                            </a>：
+                        </label>
+                        <div class="col-md-5">
+                            <input type="text" class="form-control" name="pluginDir" placeholder="请输入存储目录名" />
+                            <div class="message"></div>
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label class="col-md-3 control-label">
+                            <span class="required">*</span>
+                            上传凭证有效期                           
+                            <a href="#" class="label-tooltip" data-toggle="tooltip" data-placement="top" title="七牛云上传凭证有效期">
+                                <span class="glyphicon glyphicon-info-sign"></span>
+                            </a>：
+                        </label>
+                        <div class="col-md-5">
+                            <select class="form-control date" name='validity'>
+                                <option value='1'>1天</option>
+                                <option selected='selected' value='7'>7天</option>
+                                <option value='30'>30天</option>
+                                <option value='90'>90天</option>
+                              </select>
+                        </div>
+                    </div>
+
+                    <div class="form-group remember-group">
+                        <div class="col-md-5">
+                            <div class="checkbox">
+                                <label>
+                                    <input type="checkbox" class="remember" name="remember" value="remember" />记住
+                                </label>
+                            </div>
+                        </div>
+                    </div>
+
+                </form>
+            </div>
+            <div class="button-group">
+                <button id="start" class="btn btn-primary">生成</button>
+            </div>
+        </div>
+    </div>
+    </div>
+</body>
+
+<script src="/js/token.js"></script>
+<script src="/js/core-min.js"></script>
+<script src="/js/hmac.js"></script>
+<script src="/js/sha1.js"></script>
+<script src="/js/enc-base64.js"></script>
+<script src="/js/qiniu.min.js"></script>
+<script src="/js/util.js"></script>
+<script src="/js/popup.js"></script>
+
+</html>
