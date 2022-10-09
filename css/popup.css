@@ -7,11 +7,18 @@
     width: max-content;
     background-color: aliceblue;
 }
-
+.progress {
+    visibility: hidden;
+    margin-bottom: 0;
+}
 .header {
     text-align: center;
-    margin: 20px 0 20px;
+    margin: 0 0 20px 0;
     border-bottom: 1px solid #ccc7c7;
+}
+
+.header h2 {
+    margin-top: 10px;
 }
 
 #start {

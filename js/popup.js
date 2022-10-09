@@ -40,15 +40,15 @@ initFormValue();
 listenForm();
 listenCheckbox();
 
-$('#start').on("click", function() {
+$('#start').on("click", function () {
 
     if (validateForm()) {
         setQiniuInfo();
         chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
             swaggerUrl = request.url;
         });
-        chrome.tabs.query({ active: true, lastFocusedWindow: true }, function(tabs) {
-            alert(tabs[0].url)
+        chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
+            // alert(tabs[0].url)
             let regx = /^(.+(?=swagger))/;
             let rs = regx.exec(tabs[0].url);
             if (rs.length) {
@@ -100,7 +100,7 @@ function listenForm() {
     const formControls = $('.form-control');
     for (let element of formControls) {
         const name = element.name;
-        $(`input[name=${name}]`).bind('input propertychange change', function() {
+        $(`input[name=${name}]`).bind('input propertychange change', function () {
             validate(element, name);
             setQiniuInfo();
         })
@@ -110,7 +110,7 @@ function listenForm() {
  * 监听复选框
  */
 function listenCheckbox() {
-    rememberElement.on('change', function(event) {
+    rememberElement.on('change', function (event) {
         if ($(this).prop('checked')) {
             // 执行存储
             chrome.storage.local.set({ 'formValue': qiniuInfo });
@@ -173,7 +173,7 @@ function validate(element, name) {
 function setQiniuInfo() {
     var d = {};
     var t = $('form').serializeArray();
-    $.each(t, function() {
+    $.each(t, function () {
         d[this.name] = this.value;
     });
     qiniuInfo = d;
@@ -232,13 +232,21 @@ function uploadFile(file) {
     let observer = {
         next(result) { // 上传中(result参数带有total字段的 object，包含loaded、total、percent三个属性)
             let total = result.total;
-            $(".speed").text("进度：" + total.percent + "% "); // 查看进度[loaded:已上传大小(字节);total:本次上传总大小;percent:当前上传进度(0-100)]
+            let loaded = Math.round(total.loaded / 1024 * 100) / 100;
+            let size = Math.round(total.size / 1024 * 100) / 100;
+            console.log('🚀 -> next -> total', total);
+            $(".progress").css('visibility', 'visible')
+            $(".progress-bar").css('width', `${total.percent}%`)
+            $(".progress-bar").text(`${total.percent}%（${loaded}kb/${size}kb）`); // 查看进度[loaded:已上传大小(字节);size:本次上传总大小;percent:当前上传进度(0-100)]
+            if (total.percent === 100) {
+                $(".progress-bar").addClass('progress-bar-success')
+            }
         },
         error(err) {
             alert(err.message);
         },
         complete(res) {
-            chrome.tabs.query({ active: true, currentWindow: true }, function(tabs) {
+            chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
                 console.log('🚀 -> [popup] tabs vvvvvv', tabs[0].url);
                 const message = {
                     id: timeStemp,
@@ -259,12 +267,12 @@ function uploadFile(file) {
  * @param {string} url swagger doc地址
  */
 function getdApiDocs(url) {
-    alert('getdDoc -> swaggerUrl: ' + url);
+    // alert('getdDoc -> swaggerUrl: ' + url);
     $.ajax({
         url: url,
         type: 'GET',
         contentType: "application/json",
-        success: function(res, _res) {
+        success: function (res, _res) {
             // saveAs(JSON.stringify(res), "save.json");
             const blob = new Blob([JSON.stringify(res)], { type: "text/plain;charset=utf-8" });
             uploadFile(blob);
