@@ -20,3 +20,18 @@ function formatDate(date, fmt) {
     }
     return fmt;
 };
+
+/**
+ * alert信息
+ * @param {string} level 级别 alert-success | alert-warning | alert-danger | alert-info
+ * @param {string} info 信息
+ */
+function alertInfo(level, info) {
+    $('.alert').addClass(level);
+    $('.alert').css('display', 'block');
+    $('.alert').html(`<strong>${info}<strong/>`);
+    setTimeout(() => {
+        $('.alert').css('display', 'none');
+        $('.alert').removeClass(level);
+    }, 1500);
+};

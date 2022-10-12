@@ -11,6 +11,13 @@
     visibility: hidden;
     margin-bottom: 0;
 }
+.alert {
+    display: none;
+    position: fixed;
+    width: 100%;
+    z-index: 999;
+    top: 0;
+}
 .header {
     text-align: center;
     margin: 0 0 20px 0;

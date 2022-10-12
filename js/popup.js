@@ -48,14 +48,16 @@ $('#start').on("click", function () {
             swaggerUrl = request.url;
         });
         chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
-            // alert(tabs[0].url)
+
             let regx = /^(.+(?=swagger))/;
             let rs = regx.exec(tabs[0].url);
-            if (rs.length) {
+            if (rs && rs.length) {
                 swaggerUrl = `${rs[0]}v2/api-docs`;
+                getdApiDocs(swaggerUrl);
+            } else {
+                alertInfo('alert-warning', '不是swagger地址！');
             }
-            // return;
-            getdApiDocs(swaggerUrl);
+
         });
     }
 
@@ -243,7 +245,8 @@ function uploadFile(file) {
             }
         },
         error(err) {
-            alert(err.message);
+            console.log('🚀 -> upload -> err', err);
+            alertInfo('alert-danger', err.message);
         },
         complete(res) {
             chrome.tabs.query({ active: true, currentWindow: true }, function (tabs) {
@@ -267,7 +270,6 @@ function uploadFile(file) {
  * @param {string} url swagger doc地址
  */
 function getdApiDocs(url) {
-    // alert('getdDoc -> swaggerUrl: ' + url);
     $.ajax({
         url: url,
         type: 'GET',
@@ -276,6 +278,10 @@ function getdApiDocs(url) {
             // saveAs(JSON.stringify(res), "save.json");
             const blob = new Blob([JSON.stringify(res)], { type: "text/plain;charset=utf-8" });
             uploadFile(blob);
+        },
+        error: function (XMLHttpRequest, textStatus, errorThrown) {
+            console.log('🚀 -> getdApiDocs -> XMLHttpRequest', XMLHttpRequest);
+            alertInfo('alert-danger', '获取失败');
         }
     })
 }
