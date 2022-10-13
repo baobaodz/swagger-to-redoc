@@ -1,31 +1,13 @@
 
+console.log('🚀 -> [service-worker] location.origin', location.origin);
 // 发送信息
-chrome.runtime.sendMessage({ url: location.origin + '/v2/api-docs' }, (response) => {
-    console.log('🚀 -> [service-worker] chrome.runtime.sendMessage -> response', response);
+chrome.runtime.sendMessage({ url: location.origin + '/v2/api-docs', from: 'service-worker' }, (response) => {
+    console.log('🚀 -> [service-worker] send message -> response', response);
 });
-console.log(location.origin)
-chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
-    console.log('🚀 -> [service-worker] tabs vvvvvv', tabs[0].url);
-    chrome.tabs.sendMessage({ url: tabs[0].url, }, (response) => {
-        console.log('🚀 -> [service-worker] chrome.tabs.sendMessage -> response 222', response);
-    });
-});
-chrome.tabs.query({ active: true}, function (tabs) {
-    console.log('🚀 -> [service-worker] active tabs vvvvvv', tabs[0]);
-    chrome.scripting.executeScript({
-        target: { tabId: tabs[0].id },
-        files: ['js/content-script.js']
-      });
-});
-// 添加图标点击事件监听
-chrome.action.onClicked.addListener(() => {
-    console.log('1、点击了插件图标');
-    chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
-        console.log('2、🚀 -> tabs vvvvvv', tabs[0].url);
-        chrome.tabs.sendMessage({ url: tabs[0].url, }, (response) => {
-            console.log(
-                `service-worker -> content script infos have been received. number: ${response}`
-            );
-        });
+chrome.runtime.onMessage.addListener((message, callback) => {
+    console.log(`🚀 -> [service-worker] received message from [${message?.from}]`, message);
+    chrome.tabs.query({ active: true }, tabs => {
+        console.log('🚀 -> [service-worker] current active tab', tabs[0]);
+
     });
 });

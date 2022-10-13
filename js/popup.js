@@ -40,22 +40,33 @@ initFormValue();
 listenForm();
 listenCheckbox();
 
+chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+    console.log(`🚀 -> [popup] received message from [${message?.from}]`, message);
+    if(message){
+        swaggerUrl = message.url;
+    }
+});
 $('#start').on("click", function () {
 
     if (validateForm()) {
         setQiniuInfo();
-        chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
-            swaggerUrl = request.url;
+        chrome.runtime.onMessage.addListener((message, sender, sendResponse) => {
+            console.log(`🚀 -> [popup] -> click received message from [${message?.from}]`, message);
+            if(message){
+                swaggerUrl = message.url;
+            }
         });
-        chrome.tabs.query({ active: true, lastFocusedWindow: true }, function (tabs) {
-
-            let regx = /^(.+(?=swagger))/;
-            let rs = regx.exec(tabs[0].url);
-            if (rs && rs.length) {
-                swaggerUrl = `${rs[0]}v2/api-docs`;
-                getdApiDocs(swaggerUrl);
-            } else {
-                alertInfo('alert-warning', '不是swagger地址！');
+        chrome.tabs.query({ active: true, lastFocusedWindow: true }, tabs => {
+            console.log(`🚀 -> [popup] -> current active tab`, tabs);
+            if(tabs && tabs[0] && tabs[0].url){
+                let regx = /^(.+(?=swagger))/;
+                let rs = regx.exec(tabs[0].url);
+                if (rs && rs.length) {
+                    swaggerUrl = `${rs[0]}v2/api-docs`;
+                    getdApiDocs(swaggerUrl);
+                } else {
+                    alertInfo('alert-warning', '不是swagger地址！');
+                }
             }
 
         });
